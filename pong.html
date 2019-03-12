@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PingPong the game</title>
+</head>
+<body>
+<img id="scream" width="220" height="277" src="fonas-neon.png" alt="The Scream" style='display:none';>
+	<h1>Pong The Game</h1>
+	<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script type="text/javascript">
+
+	var canvas;
+	var canvasContext;
+
+	// Ball object
+	var ball = {
+		cordX : 50,
+		cordY : 310,
+		radius : 10,
+		// speedX : 0,
+		// speedY : 0,
+		speedX : 10,
+		speedY : 3,
+	/*	speedX : 10,
+		speedY : 2,*/
+		/*speedX : 10.2,
+		speedY : 5.5,*/
+		width : 20,
+		height : 20,
+		color : "rgb(102, 204, 255,0.8)",
+		linjasStoris : 3,
+		linijasSpalva : 'white',
+	};
+
+	var gyvas = true;
+
+	var paddle1Y = 250;
+	var paddle1X = 20;
+	var paddle2Y = 250;
+	var paddle2X = 770;
+	const PADDLE_HEIGHT = 100;
+	const PADDLE_THICKNESS = 10;
+
+	var player1Score = 0;
+	var player2Score = 0;
+
+	function calculateMousePos(evt) {
+		var rect = canvas.getBoundingClientRect();
+		var root = document.documentElement;
+		var mouseX = evt.clientX - rect.left - root.scrollLeft;
+		var mouseY = evt.clientY - rect.top - root.scrollTop;
+		return {
+			x:mouseX,
+			y:mouseY
+		};
+	}
+
+	// var paddle1Y = canvas.height/2-50;
+
+	window.onload = function() {
+
+		//'console.log("Hello Pong");
+		// console.clear();
+		canvas = document.getElementById('gameCanvas');
+		canvasContext = canvas.getContext('2d');
+
+	    
+
+
+		var framesPerSecond = 60;
+		;
+
+		setInterval(function() {
+			moveEverything();
+			drawEverything();
+		}, 1000/framesPerSecond);
+
+		canvas.addEventListener('mousemove',
+			function(evt) {
+				var mousePos = calculateMousePos(evt);
+				paddle1Y = mousePos.y-PADDLE_HEIGHT/2;
+				// paddle2Y = mousePos.y-PADDLE_HEIGHT/2;
+			});
+	}
+
+	function ballReset() {
+		gyvas = false;
+		setTimeout(function(){ 
+			gyvas = true;
+			ball.speedX = -ball.speedX;
+			ball.cordX = canvas.width/2;
+			ball.cordY = canvas.height/2;
+		 }, 2000);
+
+
+	}
+
+	function computeMovement(){
+		var paddleY2Center = paddle2Y + (PADDLE_HEIGHT/2);
+		if(paddleY2Center < ball.cordY-35){
+			paddle2Y += 2.88;
+		}else if(paddleY2Center > ball.cordY+35){
+			paddle2Y -= 2.88;
+		}
+	}
+
+
+	function moveEverything() {
+		computeMovement();
+
+		ball.cordX = ball.cordX + ball.speedX;
+
+		// paddle2Y = ball.cordY-PADDLE_HEIGHT/2;E
+		if (ball.cordX === PADDLE_THICKNESS + paddle1X + ball.radius
+			&& ball.cordY > paddle1Y
+			&& ball.cordY < paddle1Y+PADDLE_HEIGHT
+			){
+				ball.speedX = -ball.speedX;
+				// ball.speedX = -ball.speedX+5;
+			}else if(ball.cordX === paddle1X + PADDLE_THICKNESS-10){
+				player2Score++;
+				ballReset();
+			}
+		
+		
+		//Atsimusims i kaire puse kamuoliuka
+	/*	if (ball.cordX >canvas.width){
+			// ball.speedX = -ball.speedX-5;
+			ball.speedX = -ball.speedX;
+			
+			console.log(ball.speedX);
+		}
+		*/
+
+		if (ball.cordX === canvas.width-(PADDLE_THICKNESS + paddle1X + ball.radius) 
+				&& ball.cordY > paddle2Y
+				&& ball.cordY < paddle2Y+PADDLE_HEIGHT
+				){
+				ball.speedX = -ball.speedX;
+				// ball.speedX = -ball.speedX+5;
+			} else if(ball.cordX === paddle2X + PADDLE_THICKNESS+10){
+				console.log(paddle2X + PADDLE_THICKNESS/2);
+				player1Score++;
+				ballReset();
+			}
+		
+
+
+			//kolkas Y krypti pakeic tik sienas
+		//kamuoliuka Y krypties pasikeitims sienas
+		ball.cordY = ball.cordY + ball.speedY;
+		if (ball.cordY < 0){
+			// ball.speedX = -ball.speedX+5;
+			ball.speedY = -ball.speedY;
+			
+			 // console.log(ball.speedY);
+
+		}if (ball.cordY >canvas.height - ball.radius){
+			// ball.speedX = -ball.speedX-5;
+			ball.speedY = -ball.speedY;
+		
+			// console.log(ball.speedY);
+		}
+
+
+
+	}
+
+	function drawEverything() {
+		//console.log("Called drawEverything");
+		//console.log(ball.cordX);
+	
+		canvasContext.save();
+		// Fonas
+
+		figuruPiesimsStac(0,0,canvas.width,canvas.height,"black");
+		figuruPiesimsStac(300,200,200,200,"#1034A6");
+		// figuruPiesimsStac(311,211,180,180,"white");
+	
+		
+
+/*		var img=document.getElementById("scream");
+	    canvasContext.drawImage(img, -18, 0, 830, 660);*/
+
+		//Circle ball
+		if(gyvas==true){
+			figuruPiesimsCirc(ball.cordX,ball.cordY,ball.radius,ball.color,ball.linjasStoris,ball.linijasSpalva);
+		}
+		
+		canvasContext.restore();
+
+		//Linijas Paddle1
+		//InnerLine
+		linijuPiesims(PADDLE_THICKNESS/2 + paddle1X,0,PADDLE_THICKNESS/2 + paddle1X,canvas.height,5,'rgb(255, 0, 102,0.6)',15,'rgb(255, 0, 102)');
+		//Outer Line
+		linijuPiesims(PADDLE_THICKNESS/2 + paddle1X,0,PADDLE_THICKNESS/2 + paddle1X,canvas.height,2,'white',15,'rgb(255, 0, 102)');
+
+		// Player 1 paddle
+		figuruPiesimsStac(paddle1X,paddle1Y,PADDLE_THICKNESS,PADDLE_HEIGHT,"white");
+
+
+		//Linijas Paddle2
+		linijuPiesims(PADDLE_THICKNESS/2 + paddle2X,0,PADDLE_THICKNESS/2 + paddle2X,canvas.height,3,'rgb(255, 0, 102)',15,'rgb(255, 0, 102)');
+
+		// Player 2 paddle
+		figuruPiesimsStac(paddle2X,paddle2Y,PADDLE_THICKNESS,PADDLE_HEIGHT,"white");
+		
+		var lol =PADDLE_THICKNESS + paddle1X + ball.radius;
+
+	
+
+		// figuruPiesimsCirc(20,20,20,"red",1,"green");
+
+		//Linijas Paddle1
+		// linijuPiesims(paddle1X,0,paddle1X,800,1,'red');
+		//linijuPiesims(ball.cordX,0,ball.cordX,800,1,'red',0,'red');
+		//linijuPiesims(PADDLE_THICKNESS + paddle1X,0,PADDLE_THICKNESS + paddle1X,800,1,'red',0,'red');
+		// linijuPiesims(PADDLE_THICKNESS + paddle1X + ball.radius,0,PADDLE_THICKNESS + paddle1X + ball.radius,800,1,'green',0,'transparent');
+
+		//Linijas Paddle2
+		// linijuPiesims(paddle2X,0,paddle2X,800,1,'red');
+		// linijuPiesims(paddle2X-PADDLE_THICKNESS,0,paddle2X-PADDLE_THICKNESS,800,1,'red',0,'transparent');
+		// linijuPiesims(paddle2X - ball.radius,0, paddle2X - ball.radius,800,1,'red',0,'transparent');
+		canvasContext.fillStyle = "white";
+		canvasContext.fillText("score stuff",100, 100,);
+		canvasContext.fillText("Player1 score", 100,110);
+		canvasContext.fillText("Player2 score", 100,120);
+
+		canvasContext.fillText(player1Score, 170,110);
+		canvasContext.fillText(player2Score, 170,120);
+		
+		//hitbox lines TOP
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y,
+			800,paddle1Y,1,'green',0,'green');
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+PADDLE_HEIGHT/4,
+			800,paddle1Y+PADDLE_HEIGHT/4,1,'green',0,'green');
+		//hitbox middle
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+(PADDLE_HEIGHT/4+1),
+			800,paddle1Y+(PADDLE_HEIGHT/4),1,'white',0,'green');
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+PADDLE_HEIGHT-(PADDLE_HEIGHT/4+1),
+			800,paddle1Y+PADDLE_HEIGHT-(PADDLE_HEIGHT/4),1,'white',0,'green');
+		//hitbox lines bOTTOM
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+PADDLE_HEIGHT-(PADDLE_HEIGHT/4),
+			800,paddle1Y+PADDLE_HEIGHT-(PADDLE_HEIGHT/4),1,'red',0,'green');
+		linijuPiesims(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+PADDLE_HEIGHT,
+			800,paddle1Y+PADDLE_HEIGHT,1,'red',0,'green');
+		//hitboxes squares
+		figuruPiesimsStac(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y,
+			20,
+			PADDLE_HEIGHT/4,
+			"green");
+		figuruPiesimsStac(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+(PADDLE_HEIGHT/4+1),
+			19,
+			PADDLE_HEIGHT/2,
+			"blue");
+		figuruPiesimsStac(
+			paddle1X+PADDLE_THICKNESS,
+			paddle1Y+PADDLE_HEIGHT-(PADDLE_HEIGHT/4),
+			20,
+			PADDLE_HEIGHT/4,
+			"red");
+	
+ 
+	}
+
+	function figuruPiesimsCirc(leftX,topY,radius,drawColor,linjasStoris,linijasSpalva){
+		canvasContext.beginPath();
+		canvasContext.shadowBlur = 10;
+		canvasContext.shadowColor = "rgb(230, 247, 255)";
+		canvasContext.fillStyle = drawColor;
+
+		canvasContext.arc(leftX,topY,radius,0,Math.PI*2,true);
+		canvasContext.fill();
+
+		canvasContext.lineWidth = linjasStoris;
+        canvasContext.strokeStyle = linijasSpalva;
+        canvasContext.stroke();
+
+        
+	}
+
+	function figuruPiesimsStac(leftX,topY,width,height,drawColor){
+		canvasContext.shadowBlur = 800;
+		canvasContext.shadowColor = "blue";
+		canvasContext.beginPath();
+				//shadows
+		canvasContext.fillStyle = drawColor;
+		canvasContext.fillRect(leftX,topY,width,height);
+
+	}
+
+	function linijuPiesims(taskas1X,taskas1Y,taskas2X,taskas2Y,plotisLinijas,spalvaLinijas,seselisBlur,seselisSpalva){
+		canvasContext.shadowBlur = seselisBlur;
+		canvasContext.shadowColor = seselisSpalva;
+		canvasContext.beginPath();
+		canvasContext.moveTo(taskas1X,taskas1Y);
+		canvasContext.lineTo(taskas2X,taskas2Y);
+		canvasContext.lineWidth = plotisLinijas;
+		// set line color
+
+		canvasContext.strokeStyle = spalvaLinijas;
+		canvasContext.stroke();
+				//Seseliai
+	
+
+
+	}
+
+</script>
+
+</body>
+</html>
